@@ -17,35 +17,56 @@ class UserService(userRepository: UserRepository, passwordUtils: PasswordUtils, 
 
   override def validate(data: UserRequest): List[String] = List[Option[String]](
     data.username match {
-      case Some(_) => None
+      case Some(username) => username.isEmpty match {
+        case true=>Some(ErrorMessage.USER_NAME_IS_REQUIRED)
+        case _ =>None
+      }
       case _ => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
     },
     data.password match {
-      case Some(_) => None
+      case Some(password) => password.isEmpty match {
+        case true => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
+        case _ => None
+      }
       case _ => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
     },
     data.first_name match {
-      case Some(_) => None
+      case Some(first_name) => first_name.isEmpty match {
+        case true=>Some(ErrorMessage.FIRST_NAME_IS_REQUIRED)
+        case _ => None
+      }
       case _ => Some(ErrorMessage.FIRST_NAME_IS_REQUIRED)
     },
     data.last_name match {
-      case Some(_) => None
+      case Some(last_name)=>last_name.isEmpty match {
+        case true=> Some(ErrorMessage.LAST_NAME_IS_REQUIRED)
+        case _ => None
+      }
       case _ => Some(ErrorMessage.LAST_NAME_IS_REQUIRED)
     },
     data.role match {
-      case Some(_)=>None
+      case Some(role)=>role.isEmpty match {
+        case true => Some(ErrorMessage.ROLE_IS_REQUIRED)
+        case _ => None
+      }
       case _ => Some(ErrorMessage.ROLE_IS_REQUIRED)
     }
   ).flatten
 
   def validate(data:LoginRequest):List[String]= List[Option[String]](
     data.username match {
-      case Some(_) => None
-      case None => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
+      case Some(username) => username.isEmpty match {
+        case true => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
+        case _ => None
+      }
+      case _ => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
     },
     data.password match {
-      case Some(_) => None
-      case None => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
+      case Some(password) => password.isEmpty match {
+        case true => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
+        case _ => None
+      }
+      case _ => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
     }
   ).flatten
 

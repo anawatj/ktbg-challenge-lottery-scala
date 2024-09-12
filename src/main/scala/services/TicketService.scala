@@ -16,25 +16,37 @@ class TicketService(userRepository: UserRepository,lotteryRepository: LotteryRep
   override def validate(data: LotteryRequest): List[String] =
     List[Option[String]](
       data.ticket match {
-        case Some(_)=>None
+        case Some(ticket)=>ticket.isEmpty match {
+          case true => Some(ErrorMessage.TICKET_IS_REQUIRED)
+          case _ => None
+        }
         case _ => Some(ErrorMessage.TICKET_IS_REQUIRED)
       },
       data.amount match {
-        case Some(_)=>None
+        case Some(amount)=>amount<=0 match {
+          case true=>Some(ErrorMessage.AMOUNT_IS_REQUIRED)
+          case _ => None
+        }
         case _ => Some(ErrorMessage.AMOUNT_IS_REQUIRED)
       },
       data.price match {
-        case Some(_)=>None
+        case Some(price)=>price<=0.0 match {
+          case true=>Some(ErrorMessage.PRICE_IS_REQUIRED)
+          case _ => None
+        }
         case _ => Some(ErrorMessage.PRICE_IS_REQUIRED)
       }
     ).flatten
 
   def validate(data:TicketRequest):List[String]=
    List[Option[String]](
-      data.ticket match {
-        case Some(_)=>None
-        case _ => Some(ErrorMessage.TICKET_IS_REQUIRED)
-      }
+     data.ticket match {
+       case Some(ticket) => ticket.isEmpty match {
+         case true => Some(ErrorMessage.TICKET_IS_REQUIRED)
+         case _ => None
+       }
+       case _ => Some(ErrorMessage.TICKET_IS_REQUIRED)
+     }
     ).flatten
 
   def findAllTicket(username:String):Future[Either[ResponseError[String],ResponseSuccess[Array[String]]]] ={
