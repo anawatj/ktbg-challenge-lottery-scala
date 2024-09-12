@@ -3,6 +3,7 @@ package services
 
 import akka.http.scaladsl.model.StatusCodes
 import json.{LoginRequest, Response, ResponseError, ResponseSuccess, UserRequest, UserResponse}
+import messages.ErrorMessage
 import models.User
 import repositories.UserRepository
 
@@ -17,30 +18,34 @@ class UserService(userRepository: UserRepository, passwordUtils: PasswordUtils, 
   override def validate(data: UserRequest): List[String] = List[Option[String]](
     data.username match {
       case Some(_) => None
-      case _ => Some("Username is required")
+      case _ => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
     },
     data.password match {
       case Some(_) => None
-      case _ => Some("Password is required")
+      case _ => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
     },
     data.first_name match {
       case Some(_) => None
-      case _ => Some("FirstName is required")
+      case _ => Some(ErrorMessage.FIRST_NAME_IS_REQUIRED)
     },
     data.last_name match {
       case Some(_) => None
-      case _ => Some("Role is required")
+      case _ => Some(ErrorMessage.LAST_NAME_IS_REQUIRED)
+    },
+    data.role match {
+      case Some(_)=>None
+      case _ => Some(ErrorMessage.ROLE_IS_REQUIRED)
     }
   ).flatten
 
   def validate(data:LoginRequest):List[String]= List[Option[String]](
     data.username match {
       case Some(_) => None
-      case None => Some("Username is required")
+      case None => Some(ErrorMessage.USER_NAME_IS_REQUIRED)
     },
     data.password match {
       case Some(_) => None
-      case None => Some("Password is required")
+      case None => Some(ErrorMessage.PASSWORD_IS_REQUIRED)
     }
   ).flatten
 
@@ -54,13 +59,13 @@ class UserService(userRepository: UserRepository, passwordUtils: PasswordUtils, 
         for {
           userDb <- userRepository.findByUserName(user.username)
           result <- userDb match {
-            case Some(_) => Future.successful(ResponseError[String]("User is Exists", StatusCodes.BadRequest.intValue))
+            case Some(_) => Future.successful(ResponseError[String](ErrorMessage.USER_NOT_EXISTS, StatusCodes.BadRequest.intValue))
             case _ => userRepository.add(user) map {
               case user =>{
                 val token = jwtUtils.encode(user.username)
                 ResponseSuccess[UserResponse](UserResponse(user.id, user.username, user.password, user.first_name, user.last_name, user.role, token), StatusCodes.Created.intValue)
               }
-              case _ => ResponseError[Object]("Database Error", StatusCodes.InternalServerError.intValue)
+              case _ => ResponseError[Object](ErrorMessage.DATABASE_ERROR, StatusCodes.InternalServerError.intValue)
             }
           }
         } yield result match {
@@ -90,7 +95,7 @@ class UserService(userRepository: UserRepository, passwordUtils: PasswordUtils, 
               Future.successful(ResponseSuccess[UserResponse](UserResponse(userDb.get.id, userDb.get.username, userDb.get.password, userDb.get.first_name, userDb.get.last_name, userDb.get.role, token), StatusCodes.OK.intValue))
             }
             case _ =>
-              Future.successful(ResponseError[String]("Login Failed", StatusCodes.Unauthorized.intValue))
+              Future.successful(ResponseError[String](ErrorMessage.LOGIN_FAIL, StatusCodes.Unauthorized.intValue))
           }
         } yield result match {
           case x:ResponseSuccess[UserResponse]=>Right(x)
